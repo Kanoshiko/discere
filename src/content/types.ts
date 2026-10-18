@@ -47,10 +47,19 @@ export interface Question {
   explanation: string | null;
 }
 
-/** Dernier résultat de l'enfant sur une question déjà vue. */
+/** Historique de l'enfant sur une question déjà vue (question écrite ou calcul généré). */
 export interface ItemStat {
   seen: number;
   last_correct: boolean;
+  /** Nombre de jours différents où la question a été réussie depuis la dernière erreur. */
+  streak_days?: number;
+  /** Date de la dernière réponse (ISO). */
+  last_seen?: string;
+}
+
+/** Clé de suivi d'une question : id de la question écrite, ou « chapitre|énoncé » pour un calcul. */
+export function statKey(q: { itemId: string | null; chapterId: string; prompt: string }): string {
+  return q.itemId ?? `${q.chapterId}|${q.prompt}`;
 }
 
 export const STATUS_LABEL: Record<ChapterStatus, string> = {

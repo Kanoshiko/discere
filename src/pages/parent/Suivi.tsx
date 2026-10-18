@@ -4,6 +4,7 @@ import { accuracyByChapter, stillToReview } from '../../games/progress';
 import { fetchLearner, type Learner } from '../../lib/api';
 import ElementPath from '../../components/ElementPath';
 import { xpByElement } from '../../games/ranks';
+import { boxOf } from '../../games/deck';
 import type { Subject } from '../../content/types';
 import { listSubjects } from '../../lib/parentApi';
 import { GAME_LABEL, type Chapter } from '../../content/types';
@@ -69,6 +70,7 @@ export default function Suivi() {
             <section className="card stack-sm">
               <h2>Progression</h2>
               <ElementPath xp={xpByElement(progress.subjects, (id) => subjects.find((s) => s.id === id)?.element)} />
+              <BoxSummary items={progress.items} />
               <p className="muted small">
                 {progress.scrolls.length} parchemin{progress.scrolls.length > 1 ? 's' : ''} gagné{progress.scrolls.length > 1 ? 's' : ''}
                 {progress.scrolls.length > 0 && ` : ${progress.scrolls.map((id) => chapterTitle(id)).join(', ')}`}
@@ -139,5 +141,20 @@ export default function Suivi() {
         </>
       )}
     </div>
+  );
+}
+
+/** Répartition des questions déjà vues selon leur boîte de répétition espacée. */
+function BoxSummary({ items }: { items: Learner['items'] }) {
+  const boxes = Object.values(items).map((s) => boxOf(s));
+  const toReview = boxes.filter((b) => b === 0).length;
+  const learning = boxes.filter((b) => b === 1 || b === 2).length;
+  const solid = boxes.filter((b) => b !== null && b >= 3).length;
+  if (boxes.length === 0) return null;
+  return (
+    <p className="small">
+      Questions déjà vues : <strong>{solid}</strong> solides (réussies au moins 3 jours différents d’affilée),{' '}
+      <strong>{learning}</strong> en cours d’apprentissage, <strong>{toReview}</strong> ratées la dernière fois.
+    </p>
   );
 }

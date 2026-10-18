@@ -27,5 +27,13 @@ describe('générateurs', () => {
         else throw new Error(`question inattendue : ${q.prompt}`);
       }
     });
+
+    it(`${key} sait reconstruire un calcul à partir de son énoncé`, () => {
+      for (let i = 0; i < 200; i++) {
+        const q = gen.make(rng);
+        expect(gen.rebuild(q.prompt)).toEqual(q);
+      }
+      expect(gen.rebuild('énoncé inconnu')).toBeNull();
+    });
   }
 });

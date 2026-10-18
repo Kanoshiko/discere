@@ -28,6 +28,7 @@ export async function fetchCatalog(): Promise<Catalog> {
 export interface Learner {
   name: string;
   grade: string;
+  /** Historique par question : clé = id de la question écrite, ou « chapitre|énoncé » pour un calcul. */
   items: Record<string, ItemStat>;
   /** Par matière : bonnes réponses et faiblesses vaincues. */
   subjects: Record<string, SubjectProgress>;
@@ -39,8 +40,14 @@ export async function fetchLearner(token: string): Promise<Learner | null> {
   const { data, error } = await supabase.rpc('get_learner', { p_token: token });
   if (error) throw new Error(error.message);
   if (!data) return null;
-  const l = data as Partial<Learner>;
-  return { name: l.name ?? '', grade: l.grade ?? '', items: l.items ?? {}, subjects: l.subjects ?? {}, scrolls: l.scrolls ?? [] };
+  const l = data as Partial<Learner> & { facts?: Record<string, ItemStat> };
+  return {
+    name: l.name ?? '',
+    grade: l.grade ?? '',
+    items: { ...(l.facts ?? {}), ...(l.items ?? {}) },
+    subjects: l.subjects ?? {},
+    scrolls: l.scrolls ?? [],
+  };
 }
 
 export interface AnswerRecord {

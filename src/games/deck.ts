@@ -1,7 +1,7 @@
 import { displayAnswer, normalize } from '../content/answers';
 import { GENERATORS } from '../content/generators';
 import { shuffle, weightedIndex, type Rng } from '../content/random';
-import type { Chapter, Item, ItemStat, Question } from '../content/types';
+import { statKey, type Chapter, type Item, type ItemStat, type Question } from '../content/types';
 
 export interface ChapterContent {
   chapter: Chapter;
@@ -20,10 +20,34 @@ export function chapterWeight(chapter: Chapter): number {
   return chapter.status === 'en_cours' ? 3 : 1;
 }
 
-/** Question jamais vue : 2 ; ratée la dernière fois : 4 ; réussie la dernière fois : 1. */
-export function itemWeight(stat: ItemStat | undefined): number {
-  if (!stat) return 2;
-  return stat.last_correct ? 1 : 4;
+/**
+ * Répétition espacée, façon boîtes de Leitner. Boîte 0 : ratée la dernière fois ;
+ * boîtes 1 à 4 : réussie depuis la dernière erreur, 1 à 4 jours différents (ou plus).
+ */
+export function boxOf(stat: ItemStat | undefined): number | null {
+  if (!stat) return null;
+  if (!stat.last_correct) return 0;
+  return Math.min(4, Math.max(1, stat.streak_days ?? 1));
+}
+
+/** Poids de tirage par boîte, et poids d'une question jamais vue. */
+export const BOX_WEIGHT = [8, 3, 2, 1, 0.5];
+export const NEW_WEIGHT = 4;
+/** Nombre de jours après lequel une question réussie est « à revoir » (poids doublé). */
+export const BOX_INTERVAL_DAYS = [0, 1, 3, 7, 14];
+
+const DAY = 86_400_000;
+
+export function isDue(stat: ItemStat | undefined, now: number): boolean {
+  const box = boxOf(stat);
+  if (box === null || box === 0 || !stat?.last_seen) return false;
+  return now - Date.parse(stat.last_seen) >= BOX_INTERVAL_DAYS[box] * DAY;
+}
+
+export function itemWeight(stat: ItemStat | undefined, now: number = Date.now()): number {
+  const box = boxOf(stat);
+  if (box === null) return NEW_WEIGHT;
+  return BOX_WEIGHT[box] * (isDue(stat, now) ? 2 : 1);
 }
 
 export function itemToQuestion(item: Item, rng: Rng): Question {
@@ -42,10 +66,7 @@ export function itemToQuestion(item: Item, rng: Rng): Question {
   };
 }
 
-export function generatedQuestion(chapter: Chapter, rng: Rng): Question | null {
-  const gen = chapter.generator ? GENERATORS[chapter.generator] : undefined;
-  if (!gen) return null;
-  const g = gen.make(rng);
+function fromGenerated(chapter: Chapter, g: { prompt: string; answer: string; explanation: string | null }): Question {
   return {
     key: `gen:${chapter.id}:${g.prompt}`,
     itemId: null,
@@ -58,11 +79,39 @@ export function generatedQuestion(chapter: Chapter, rng: Rng): Question | null {
   };
 }
 
+export function generatedQuestion(chapter: Chapter, rng: Rng): Question | null {
+  const gen = chapter.generator ? GENERATORS[chapter.generator] : undefined;
+  return gen ? fromGenerated(chapter, gen.make(rng)) : null;
+}
+
+/**
+ * Calculs déjà posés dans ce chapitre qui méritent de revenir : ratés la dernière fois,
+ * ou réussis mais « à revoir ».
+ */
+export function factsToReview(
+  chapter: Chapter,
+  stats: Readonly<Record<string, ItemStat>>,
+  now: number,
+): { question: Question; weight: number }[] {
+  const gen = chapter.generator ? GENERATORS[chapter.generator] : undefined;
+  if (!gen) return [];
+  const prefix = `${chapter.id}|`;
+  const out: { question: Question; weight: number }[] = [];
+  for (const [key, stat] of Object.entries(stats)) {
+    if (!key.startsWith(prefix)) continue;
+    if (stat.last_correct && !isDue(stat, now)) continue;
+    const g = gen.rebuild(key.slice(prefix.length));
+    if (g) out.push({ question: fromGenerated(chapter, g), weight: itemWeight(stat, now) });
+  }
+  return out;
+}
+
 /**
  * Tire `count` questions sans doublon parmi les chapitres donnés.
  * Chaque question choisit d'abord un chapitre (pondéré par son statut), puis
- * une question de ce chapitre (pondérée par le dernier résultat de l'enfant),
- * ou en génère une. Renvoie moins de `count` questions si le contenu est épuisé.
+ * une question de ce chapitre (pondérée par sa boîte de répétition espacée).
+ * Pour un chapitre à générateur : un calcul à revoir, ou un nouveau calcul (poids NEW_WEIGHT).
+ * Renvoie moins de `count` questions si le contenu est épuisé.
  */
 export function buildDeck(
   contents: readonly ChapterContent[],
@@ -70,6 +119,7 @@ export function buildDeck(
   count: number,
   rng: Rng,
   options: DeckOptions = {},
+  now: number = Date.now(),
 ): Question[] {
   const deck: Question[] = [];
   const usedKeys = new Set<string>();
@@ -93,13 +143,16 @@ export function buildDeck(
 
     let question: Question | null = null;
     if (chapter.generator) {
+      const review = factsToReview(chapter, stats, now).filter((r) => accept(r.question));
+      const ri = weightedIndex([NEW_WEIGHT, ...review.map((r) => r.weight)], rng);
+      if (ri > 0) question = review[ri - 1].question;
       for (let tries = 0; tries < 30 && !question; tries++) {
         const q = generatedQuestion(chapter, rng);
         if (q && accept(q)) question = q;
       }
     } else {
       const candidates = items.map((item) => itemToQuestion(item, rng)).filter(accept);
-      const ii = weightedIndex(candidates.map((q) => itemWeight(stats[q.itemId!])), rng);
+      const ii = weightedIndex(candidates.map((q) => itemWeight(stats[statKey(q)], now)), rng);
       if (ii >= 0) question = candidates[ii];
     }
 

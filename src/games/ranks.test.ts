@@ -31,7 +31,7 @@ describe('xp', () => {
 });
 
 describe('roundGains', () => {
-  const q = (itemId: string | null, chapterId = 'c') => ({ itemId, chapterId });
+  const q = (itemId: string | null, chapterId = 'c', prompt = 'p') => ({ itemId, chapterId, prompt });
   it('donne le bonus quand une question ratée est réussie', () => {
     const gains = roundGains(
       [
@@ -39,12 +39,13 @@ describe('roundGains', () => {
         { question: q('i2'), correct: false },
         { question: q('i2'), correct: true }, // ratée plus tôt dans la partie : 30
         { question: q('i3'), correct: true }, // jamais vue : 10
-        { question: q(null), correct: true }, // générée : 10
+        { question: q(null, 'c', '2 × 3 = ?'), correct: true }, // calcul jamais vu : 10
+        { question: q(null, 'c', '7 × 8 = ?'), correct: true }, // calcul raté avant la partie : 30
       ],
-      { i1: { seen: 1, last_correct: false } },
+      { i1: { seen: 1, last_correct: false }, 'c|7 × 8 = ?': { seen: 1, last_correct: false } },
       () => 'eau',
     );
-    expect(gains.eau).toBe(80);
+    expect(gains.eau).toBe(110);
   });
   it('ignore les chapitres sans élément', () => {
     expect(roundGains([{ question: q('i1'), correct: true }], {}, () => undefined)).toEqual({ feu: 0, air: 0, eau: 0, terre: 0 });

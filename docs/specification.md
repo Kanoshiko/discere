@@ -62,9 +62,18 @@ L'enfant choisit un chapitre ou **« L'épreuve de l'Avatar »** (tous les chapi
 révision).
 
 1. Pour chaque question, on tire d'abord un chapitre : *en cours* poids 3, *révision* poids 1.
-2. Puis une question de ce chapitre, selon le dernier résultat de l'enfant : jamais vue 2,
-   ratée la dernière fois 4, réussie la dernière fois 1. Pas de doublon dans une partie.
-3. Un chapitre à générateur fabrique une nouvelle question à chaque tirage.
+2. Puis une question de ce chapitre, par **répétition espacée** (boîtes de Leitner) :
+   - chaque question déjà vue est dans une **boîte** : 0 si elle a été ratée la dernière fois ;
+     sinon 1 à 4 selon le nombre de **jours différents** où elle a été réussie depuis sa dernière
+     erreur (4 = quatre jours ou plus) ;
+   - poids de tirage : boîte 0 → 8, jamais vue → 4, boîte 1 → 3, boîte 2 → 2, boîte 3 → 1,
+     boîte 4 → 0,5 ;
+   - une question réussie est **à revoir** (poids doublé) quand son délai est passé depuis la
+     dernière fois qu'elle est tombée : 1 jour (boîte 1), 3 jours (2), 7 jours (3), 14 jours (4).
+   Pas de doublon dans une partie.
+3. Un chapitre à générateur garde la trace de chaque calcul posé (« 7 × 8 = ? »). Il propose
+   soit un calcul à revoir (raté la dernière fois, ou réussi mais à revoir, mêmes poids), soit un
+   nouveau calcul (poids 4).
 
 ## Jeux
 
@@ -84,8 +93,8 @@ L'écran de fin liste les questions ratées avec la bonne réponse.
 
 Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se perd jamais.
 
-- **Points** : 10 par bonne réponse, plus 20 quand l'enfant réussit une question qu'il avait
-  ratée la fois précédente (« faiblesse vaincue »). Les points d'une question vont à l'élément
+- **Points** : 10 par bonne réponse, plus 20 quand l'enfant réussit une question ou un calcul
+  qu'il avait raté la fois précédente (« faiblesse vaincue »). Les points d'une question vont à l'élément
   de sa matière.
 - **Rangs** par élément : Novice (0), Apprenti (150), Disciple (600), Maître (1 500 points),
   affichés « Apprenti du feu », « Maître de l'eau »…
@@ -102,7 +111,8 @@ Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se p
   clic, ajout d'un chapitre.
 - **Chapitre** : titre, matière, période, statut, générateur ; ajout, modification et
   suppression des questions ; lien « Essayer les jeux de ce chapitre ».
-- **Suivi** : rangs par élément et parchemins ; sur 30 jours : réussite par chapitre, questions « à retravailler » (ratées la
+- **Suivi** : rangs par élément, parchemins, nombre de questions solides (boîte 3 ou 4), en cours
+  d'apprentissage (1 ou 2) et ratées la dernière fois ; sur 30 jours : réussite par chapitre, questions « à retravailler » (ratées la
   dernière fois qu'elles sont tombées), dernières parties.
 - **Enfants et appareils** : ajout d'un enfant, lien d'appareil à copier, création d'un nouveau
   lien (l'ancien cesse de fonctionner).
@@ -112,8 +122,10 @@ Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se p
 - Lecture publique : matières, chapitres non « à venir » et leurs questions (contenu scolaire,
   rien de personnel).
 - Réservé aux parents : enfants, parties (`rounds`), réponses (`answers`), chapitres à venir.
-- L'enfant passe par des fonctions identifiées par son jeton : `get_learner` (prénom, dernier
-  résultat par question, bonnes réponses et faiblesses vaincues par matière, parchemins) et
+- L'enfant passe par des fonctions identifiées par son jeton : `get_learner` (prénom, historique
+  par question écrite et par calcul généré — dernier résultat, jours de réussite depuis la
+  dernière erreur, dernière date —, bonnes réponses et faiblesses vaincues par matière,
+  parchemins) et
   `finish_round` (enregistre une partie et au plus 200 réponses via `record_round`, puis
   attribue les parchemins).
 
@@ -131,3 +143,5 @@ Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se p
 - 2026-10-18 : première version (trois jeux, programme par chapitres, suivi parent).
 - 2026-10-18 : univers des quatre éléments (thème par matière, jeux renommés), points, rangs,
   Avatar et parchemins.
+- 2026-10-18 : répétition espacée (boîtes de Leitner, délais de révision) et retour des calculs
+  ratés dans les chapitres à générateur ; faiblesses vaincues comptées aussi pour les calculs.

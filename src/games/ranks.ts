@@ -1,6 +1,5 @@
 // Progression par élément : points, rangs, Avatar.
-import type { Element } from '../content/types';
-import type { ItemStat } from '../content/types';
+import { statKey, type Element, type ItemStat } from '../content/types';
 
 export const ELEMENTS: Element[] = ['eau', 'terre', 'feu', 'air'];
 
@@ -72,14 +71,14 @@ export function isAvatar(xp: Record<Element, number>): boolean {
 }
 
 export interface AnsweredLike {
-  question: { itemId: string | null; chapterId: string };
+  question: { itemId: string | null; chapterId: string; prompt: string };
   correct: boolean;
 }
 
 /**
  * Points gagnés pendant une partie, par élément. Même règle que la base :
- * 10 par bonne réponse, +20 si la question avait été ratée la fois précédente
- * (avant la partie, ou plus tôt dans la même partie).
+ * 10 par bonne réponse, +20 si la question (ou le calcul) avait été ratée la fois
+ * précédente (avant la partie, ou plus tôt dans la même partie).
  */
 export function roundGains(
   answers: readonly AnsweredLike[],
@@ -90,10 +89,10 @@ export function roundGains(
   const last = new Map<string, boolean>();
   for (const a of answers) {
     const el = elementOfChapter(a.question.chapterId);
-    const id = a.question.itemId;
-    const previous = id ? (last.has(id) ? last.get(id) : stats[id]?.last_correct) : undefined;
+    const key = statKey(a.question);
+    const previous = last.has(key) ? last.get(key) : stats[key]?.last_correct;
     if (el && a.correct) gains[el] += XP_CORRECT + (previous === false ? XP_VANQUISHED : 0);
-    if (id) last.set(id, a.correct);
+    last.set(key, a.correct);
   }
   return gains;
 }
