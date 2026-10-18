@@ -5,7 +5,7 @@ l'avancée du programme scolaire. Interface **en français**, tutoiement. L'enfa
 tablette ou ordinateur ; le parent gère le programme depuis `/parent`.
 
 - Base : Supabase, projet `discere` (ref `brteqdjzfrhlcuwpmagj`, région Paris)
-- Hébergement : Netlify, déploiement automatique de `main`
+- Site : https://discere-etzh.netlify.app (Netlify, projet `discere-etzh`, déploiement automatique de `main`)
 - La base de production contient les résultats réels de l'enfant : ne jamais vider ni
   réinitialiser des tables sans accord explicite. Faire les essais dans une transaction annulée
   (`begin; … rollback;`).

@@ -7,6 +7,8 @@ Petits jeux de révision pour l'école primaire, dont le contenu suit l'avancée
 - **Parent** (`/parent`) : ouvre les chapitres au fil de l'année, écrit ses propres questions,
   suit les progrès et relie les appareils de l'enfant.
 
+Site : https://discere-etzh.netlify.app — espace parent : `/parent`.
+
 Fonctionnement détaillé : [`docs/specification.md`](docs/specification.md).
 
 ## Technologies
