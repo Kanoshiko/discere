@@ -1,11 +1,13 @@
 export type ItemKind = 'choix' | 'saisie' | 'vrai_faux';
 export type ChapterStatus = 'a_venir' | 'en_cours' | 'revision';
 export type GameId = 'quiz' | 'chrono' | 'paires';
+export type Element = 'feu' | 'air' | 'eau' | 'terre';
 
 export interface Subject {
   id: string;
   name: string;
   color: string;
+  element: Element;
   position: number;
 }
 
@@ -64,7 +66,7 @@ export const KIND_LABEL: Record<ItemKind, string> = {
 };
 
 export const GAME_LABEL: Record<GameId, string> = {
-  quiz: 'Quiz',
-  chrono: 'Contre la montre',
-  paires: 'Les paires',
+  quiz: 'Entraînement',
+  chrono: 'Duel éclair',
+  paires: 'Harmonie',
 };

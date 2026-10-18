@@ -9,6 +9,20 @@ Petits jeux de révision pour un enfant de primaire (CM1 en 2026-2027). Le conte
 l'avancée du programme scolaire : le parent ouvre les chapitres au fur et à mesure qu'ils sont
 vus en classe, et les questions ratées reviennent plus souvent.
 
+## Univers des quatre éléments
+
+Thème choisi avec l'enfant, inspiré des séries où l'on maîtrise les éléments (dessins et
+vocabulaire originaux : ni personnage, ni logo, ni symbole officiel).
+
+- Chaque matière est rattachée à un **élément** : feu, air, eau ou terre. Par défaut :
+  Mathématiques = feu, Français = air, Histoire = terre, Sciences = eau, Anglais = air.
+  Le parent le change dans « Programme ».
+- L'élément donne ses couleurs, son emblème, son motif de fond et son animation de réussite aux
+  cartes de chapitre et aux pages de jeu. Le mélange de tous les chapitres s'appelle
+  **« L'épreuve de l'Avatar »** (thème violet, quatre éléments).
+- Noms des jeux : **Entraînement** (quiz), **Duel éclair** (contre la montre),
+  **Harmonie** (paires).
+
 ## Rôles
 
 - **Enfant** : pas de compte. Son appareil (tablette, ordinateur) est relié une fois par un
@@ -44,7 +58,8 @@ et la virgule vaut le point (« 80 600 » = « 80600 »).
 
 ## Choix des questions
 
-L'enfant choisit un chapitre ou **« Tout mélanger »** (tous les chapitres en cours et en révision).
+L'enfant choisit un chapitre ou **« L'épreuve de l'Avatar »** (tous les chapitres en cours et en
+révision).
 
 1. Pour chaque question, on tire d'abord un chapitre : *en cours* poids 3, *révision* poids 1.
 2. Puis une question de ce chapitre, selon le dernier résultat de l'enfant : jamais vue 2,
@@ -55,22 +70,39 @@ L'enfant choisit un chapitre ou **« Tout mélanger »** (tous les chapitres en 
 
 | Jeu | Déroulement | Score |
 | --- | --- | --- |
-| **Quiz** | 10 questions ; après chaque réponse : « Bravo ! » ou la bonne réponse, et l'explication | bonnes réponses / 10 |
-| **Contre la montre** | 60 secondes, enchaînement rapide ; la bonne réponse s'affiche brièvement en cas d'erreur | nombre de bonnes réponses |
-| **Les paires** | 6 questions à relier à leur réponse (questions de 70 caractères au plus, réponses de 24 au plus, toutes différentes, pas de vrai/faux) | paires trouvées du premier coup / 6 |
+| **Entraînement** (quiz) | 10 questions ; après chaque réponse : « Bravo ! » ou la bonne réponse, et l'explication | bonnes réponses / 10 |
+| **Duel éclair** (contre la montre) | 60 secondes, enchaînement rapide ; la bonne réponse s'affiche brièvement en cas d'erreur | nombre de bonnes réponses |
+| **Harmonie** (paires) | 6 questions à relier à leur réponse (questions de 70 caractères au plus, réponses de 24 au plus, toutes différentes, pas de vrai/faux) | paires trouvées du premier coup / 6 |
 
-Les paires ne sont proposées que si le chapitre fournit au moins 4 paires possibles.
+Harmonie n'est proposé que si le chapitre fournit au moins 4 paires possibles.
 
 **Étoiles** en fin de partie : 3 à partir de 90 % de réussite, 2 à partir de 70 %, 1 à partir
-de 50 %. Pour « Contre la montre », le pourcentage est calculé sur au moins 10 réponses.
+de 50 %. Pour le Duel éclair, le pourcentage est calculé sur au moins 10 réponses.
 L'écran de fin liste les questions ratées avec la bonne réponse.
+
+## Progression
+
+Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se perd jamais.
+
+- **Points** : 10 par bonne réponse, plus 20 quand l'enfant réussit une question qu'il avait
+  ratée la fois précédente (« faiblesse vaincue »). Les points d'une question vont à l'élément
+  de sa matière.
+- **Rangs** par élément : Novice (0), Apprenti (150), Disciple (600), Maître (1 500 points),
+  affichés « Apprenti du feu », « Maître de l'eau »…
+- **Avatar** : quand les quatre éléments ont atteint le rang de Maître.
+- **Parchemins** : un par chapitre, gagné pour toujours quand, sur les 20 dernières réponses du
+  chapitre (15 au moins), 80 % sont justes.
+- Fin de partie : points gagnés par élément, nouveau rang, Avatar, parchemin gagné.
+- Accueil : les quatre éléments avec rang et points manquants, parchemin gagné ou à gagner sur
+  chaque chapitre.
 
 ## Espace parent
 
-- **Programme** : chapitres par matière, changement de statut en un clic, ajout d'un chapitre.
+- **Programme** : chapitres par matière, élément de chaque matière, changement de statut en un
+  clic, ajout d'un chapitre.
 - **Chapitre** : titre, matière, période, statut, générateur ; ajout, modification et
   suppression des questions ; lien « Essayer les jeux de ce chapitre ».
-- **Suivi** (30 derniers jours) : réussite par chapitre, questions « à retravailler » (ratées la
+- **Suivi** : rangs par élément et parchemins ; sur 30 jours : réussite par chapitre, questions « à retravailler » (ratées la
   dernière fois qu'elles sont tombées), dernières parties.
 - **Enfants et appareils** : ajout d'un enfant, lien d'appareil à copier, création d'un nouveau
   lien (l'ancien cesse de fonctionner).
@@ -80,8 +112,10 @@ L'écran de fin liste les questions ratées avec la bonne réponse.
 - Lecture publique : matières, chapitres non « à venir » et leurs questions (contenu scolaire,
   rien de personnel).
 - Réservé aux parents : enfants, parties (`rounds`), réponses (`answers`), chapitres à venir.
-- L'enfant passe par deux fonctions identifiées par son jeton : `get_learner` (prénom et dernier
-  résultat par question) et `record_round` (enregistre une partie et au plus 200 réponses).
+- L'enfant passe par des fonctions identifiées par son jeton : `get_learner` (prénom, dernier
+  résultat par question, bonnes réponses et faiblesses vaincues par matière, parchemins) et
+  `finish_round` (enregistre une partie et au plus 200 réponses via `record_round`, puis
+  attribue les parchemins).
 
 ## Décisions validées
 
@@ -89,7 +123,11 @@ L'écran de fin liste les questions ratées avec la bonne réponse.
   Paris), Netlify.
 - Pas de compte enfant : appareil relié par lien secret.
 - Contenu de départ : CM1, période 1 (exemples à ajuster par le parent).
+- Univers des quatre éléments et progression (rangs, Avatar, parchemins) ; récompenses réelles
+  et série de jours remises à plus tard.
 
 ## Historique des mises à jour
 
 - 2026-10-18 : première version (trois jeux, programme par chapitres, suivi parent).
+- 2026-10-18 : univers des quatre éléments (thème par matière, jeux renommés), points, rangs,
+  Avatar et parchemins.

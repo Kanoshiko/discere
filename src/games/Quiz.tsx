@@ -1,17 +1,19 @@
 import { useRef, useState } from 'react';
 import QuestionView from '../components/QuestionView';
 import { displayAnswer, isCorrect } from '../content/answers';
-import type { Question } from '../content/types';
+import type { Element, Question } from '../content/types';
+import { ElementIcon } from '../components/Element';
 import type { AnswerRecord } from '../lib/api';
 import type { RoundResult } from './types';
 
 interface Props {
   deck: Question[];
   onFinish: (result: RoundResult) => void;
+  elementOf: (chapterId: string) => Element | undefined;
 }
 
 /** Quiz : une question à la fois, correction et explication après chaque réponse. */
-export default function Quiz({ deck, onFinish }: Props) {
+export default function Quiz({ deck, onFinish, elementOf }: Props) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
   const [feedback, setFeedback] = useState<AnswerRecord | null>(null);
@@ -52,6 +54,9 @@ export default function Quiz({ deck, onFinish }: Props) {
 
       {feedback && (
         <div className={feedback.correct ? 'feedback ok' : 'feedback ko'} role="status">
+          {feedback.correct && (
+            <ElementIcon element={elementOf(question.chapterId) ?? 'avatar'} size={56} className={`burst burst-${elementOf(question.chapterId) ?? 'avatar'}`} />
+          )}
           <p className="feedback-title">{feedback.correct ? 'Bravo !' : 'Pas tout à fait…'}</p>
           {!feedback.correct && (
             <p>

@@ -46,8 +46,10 @@ Toujours lancer `npm test` et `npm run build` avant de commiter.
 ```
 src/content/     types.ts, answers.ts (correction), generators.ts (calcul mental),
                  validate.ts (questions saisies par le parent), random.ts — TypeScript pur, testé
-src/games/       deck.ts (choix des questions, étoiles), progress.ts (suivi) — testés ;
+src/games/       deck.ts (choix des questions, étoiles), progress.ts (suivi),
+                 ranks.ts (points, rangs, Avatar) — testés ;
                  Quiz, Chrono, Paires, Resultat (composants)
+src/components/  Element.tsx (emblèmes SVG originaux, parchemin), ElementPath, QuestionView, Loading
 src/lib/         supabase.ts, api.ts (enfant), parentApi.ts, auth.ts (lien magique),
                  deviceStore.ts (jeton de l'appareil), childData.ts
 src/pages/enfant/  Accueil, Appareil (/appareil/:token), ChoixJeu, Partie
@@ -65,22 +67,28 @@ docs/specification.md
   Les règles de lecture publique ne doivent pas appeler `private.is_admin()` (le rôle `anon` n'y
   a pas droit).
 - Parent = e-mail présent dans `public.admins` (minuscules).
-- L'enfant passe par `get_learner(token)` et `record_round(token, …)` (`security definer`).
+- L'enfant passe par `get_learner(token)` et `finish_round(token, …)` (`security definer`,
+  `finish_round` appelle `record_round`).
 - Après chaque migration : `get_advisors` (sécurité) et un test des droits en rôle `anon` /
-  `authenticated` dans une transaction annulée. Les deux avertissements sur `get_learner` et
-  `record_round` (appelables par `anon`) sont voulus.
+  `authenticated` dans une transaction annulée. Les avertissements sur `get_learner`,
+  `record_round` et `finish_round` (appelables par `anon`) sont voulus.
 
 ## Migrations et déploiement
 
 - Nouvelle migration = nouveau fichier `supabase/migrations/AAAAMMJJHHMMSS_nom.sql`.
 - Appliquer la migration sur Supabase *avant* de pousser sur `main` du code qui en dépend.
-- Préférer les migrations additives ; l'outil MCP Supabase bloque les `drop` (préférer
-  `alter policy`, `create or replace`).
+- Préférer les migrations additives ; l'outil MCP Supabase bloque (délai dépassé) les `drop` et
+  les `update` sans `where` : préférer `alter policy`, `create or replace`, `update … where`.
+- `execute_sql` exécute tout dans une seule transaction : ne jamais mettre une écriture voulue
+  dans le même appel qu'un test terminé par `rollback`.
 - Si l'outil MCP ne peut pas appliquer une migration, donner le fichier à coller dans le SQL
   Editor : https://supabase.com/dashboard/project/brteqdjzfrhlcuwpmagj/sql/new
 
 ## Conventions UI
 
+- Univers des quatre éléments (feu, air, eau, terre) : dessins et vocabulaire originaux, jamais
+  de personnage, logo ou symbole officiel d'une série. Thème via l'attribut `data-element`
+  (variables `--el`, `--el-dark`, `--el-light`, `--el-pattern` dans `src/styles.css`).
 - Français, tutoiement. Pas d'emoji.
 - Côté enfant : gros boutons (≥ 48 px), couleurs vives, textes courts et encourageants.
 - Côté parent : sobre, menu latéral à partir de 700 px.
@@ -91,5 +99,5 @@ docs/specification.md
 
 1. Ajouter les chapitres des périodes suivantes au fil de l'année.
 2. Nouveaux jeux (dictée de mots, remettre dans l'ordre, frise chronologique).
-3. Récompenses / série de jours joués.
+3. Série de jours joués, récompenses réelles fixées par le parent.
 4. E-mail de connexion en français (Supabase → Authentication → Email templates).

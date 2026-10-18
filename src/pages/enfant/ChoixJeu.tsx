@@ -1,15 +1,16 @@
 import { Link, useParams } from 'react-router-dom';
 import { LoadError, Loading } from '../../components/Loading';
-import { contentsFor, useChildData } from '../../lib/childData';
+import { contentsFor, themeFor, useChildData } from '../../lib/childData';
+import { ElementIcon } from '../../components/Element';
 import { buildDeck } from '../../games/deck';
 import { fitsPair, PAIRS } from '../../games/Paires';
 import { seeded } from '../../content/random';
-import type { GameId } from '../../content/types';
+import { GAME_LABEL, type GameId } from '../../content/types';
 
-const GAMES: { id: GameId; title: string; text: string }[] = [
-  { id: 'quiz', title: 'Quiz', text: '10 questions, avec la correction à chaque fois.' },
-  { id: 'chrono', title: 'Contre la montre', text: 'Un maximum de bonnes réponses en 60 secondes.' },
-  { id: 'paires', title: 'Les paires', text: 'Relie chaque question à sa réponse.' },
+const GAMES: { id: GameId; text: string }[] = [
+  { id: 'quiz', text: '10 questions, avec la correction à chaque fois.' },
+  { id: 'chrono', text: 'Un maximum de bonnes réponses en 60 secondes.' },
+  { id: 'paires', text: 'Relie chaque question à sa réponse.' },
 ];
 
 export default function ChoixJeu() {
@@ -22,7 +23,8 @@ export default function ChoixJeu() {
   const { catalog } = state.data;
   const contents = contentsFor(catalog, scope);
   const chapter = catalog.chapters.find((c) => c.id === scope);
-  const title = scope === 'melange' ? 'Tout mélanger' : chapter?.title;
+  const title = scope === 'melange' ? 'L’épreuve de l’Avatar' : chapter?.title;
+  const theme = themeFor(catalog, scope);
 
   if (contents.length === 0) {
     return (
@@ -37,9 +39,12 @@ export default function ChoixJeu() {
   const anyQuestion = buildDeck(contents, {}, 1, seeded(1)).length > 0;
 
   return (
-    <main className="page child">
+    <main className="page child themed" data-element={theme}>
       <Link className="back" to="/">← Accueil</Link>
-      <h1 className="page-title">{title}</h1>
+      <h1 className="page-title">
+        <ElementIcon element={theme} size={44} />
+        {title}
+      </h1>
       {!anyQuestion ? (
         <p className="muted">Ce chapitre n'a pas encore de questions.</p>
       ) : (
@@ -47,12 +52,12 @@ export default function ChoixJeu() {
           {GAMES.map((g) =>
             g.id === 'paires' && !pairsPossible ? (
               <div key={g.id} className="big-card disabled" aria-disabled="true">
-                <span className="big-card-title">{g.title}</span>
+                <span className="big-card-title">{GAME_LABEL[g.id]}</span>
                 <span>Pas assez de questions courtes ici pour ce jeu.</span>
               </div>
             ) : (
               <Link key={g.id} className={`big-card game-${g.id}`} to={`/jouer/${scope}/${g.id}`}>
-                <span className="big-card-title">{g.title}</span>
+                <span className="big-card-title">{GAME_LABEL[g.id]}</span>
                 <span>{g.text}</span>
               </Link>
             ),

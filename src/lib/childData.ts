@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { fetchCatalog, fetchLearner, type Catalog, type Learner } from './api';
 import { getDeviceToken } from './deviceStore';
 import type { ChapterContent } from '../games/deck';
+import type { Element } from '../content/types';
+import type { Theme } from '../components/Element';
+import { xpByElement } from '../games/ranks';
 
 export interface ChildData {
   catalog: Catalog;
@@ -58,4 +61,23 @@ export function contentsFor(catalog: Catalog, scope: string): ChapterContent[] {
     chapter,
     items: catalog.items.filter((i) => i.chapter_id === chapter.id),
   }));
+}
+
+/** Élément de la matière d'un chapitre. */
+export function chapterElementFn(catalog: Catalog): (chapterId: string) => Element | undefined {
+  const bySubject = new Map(catalog.subjects.map((s) => [s.id, s.element]));
+  const byChapter = new Map(catalog.chapters.map((c) => [c.id, bySubject.get(c.subject_id)]));
+  return (chapterId) => byChapter.get(chapterId);
+}
+
+/** Points de l'enfant par élément. */
+export function learnerXp(catalog: Catalog, learner: Learner): Record<Element, number> {
+  const bySubject = new Map(catalog.subjects.map((s) => [s.id, s.element]));
+  return xpByElement(learner.subjects, (id) => bySubject.get(id));
+}
+
+/** Thème d'une page de jeu : l'élément du chapitre, ou l'Avatar pour le mélange. */
+export function themeFor(catalog: Catalog, scope: string): Theme {
+  if (scope === 'melange') return 'avatar';
+  return chapterElementFn(catalog)(scope) ?? 'avatar';
 }

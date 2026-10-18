@@ -6,10 +6,13 @@ import {
   listChapters,
   listSubjects,
   updateChapter,
+  updateSubjectElement,
   type ChapterDraft,
 } from '../../lib/parentApi';
+import { ElementIcon } from '../../components/Element';
+import { ELEMENTS, ELEMENT_NAME } from '../../games/ranks';
 import { GENERATORS, generatorLabel } from '../../content/generators';
-import { STATUS_LABEL, type Chapter, type ChapterStatus, type Subject } from '../../content/types';
+import { STATUS_LABEL, type Chapter, type ChapterStatus, type Element, type Subject } from '../../content/types';
 
 const STATUSES: ChapterStatus[] = ['a_venir', 'en_cours', 'revision'];
 
@@ -45,13 +48,24 @@ export default function Programme() {
     }
   }
 
+  async function setElement(subject: Subject, element: Element) {
+    setError(null);
+    setSubjects((list) => list.map((s) => (s.id === subject.id ? { ...s, element } : s)));
+    try {
+      await updateSubjectElement(subject.id, element);
+    } catch (e) {
+      setError((e as Error).message);
+      load();
+    }
+  }
+
   return (
     <div className="stack">
       <header>
         <h1 className="h-parent">Programme</h1>
         <p className="muted">
           Au fil de l’année, passe les chapitres de « À venir » à « En cours » quand ils sont vus en classe,
-          puis à « Révision ». Les chapitres en cours reviennent trois fois plus souvent dans « Tout mélanger ».
+          puis à « Révision ». Les chapitres en cours reviennent trois fois plus souvent dans « L’épreuve de l’Avatar ». Chaque matière est rattachée à un élément (feu, air, eau, terre) qui donne ses couleurs aux jeux et compte pour la progression de l’enfant.
         </p>
       </header>
 
@@ -62,8 +76,19 @@ export default function Programme() {
         subjects.map((s) => {
           const list = chapters.filter((c) => c.subject_id === s.id);
           return (
-            <section key={s.id} className="card stack-sm" style={{ ['--subject' as string]: s.color }}>
-              <h2 className="subject-heading">{s.name}</h2>
+            <section key={s.id} className="card stack-sm" data-element={s.element}>
+              <div className="row-between">
+                <h2 className="subject-heading">
+                  <ElementIcon element={s.element} size={30} />
+                  {s.name}
+                </h2>
+                <label className="row small">
+                  Élément
+                  <select className="input auto" value={s.element} onChange={(e) => setElement(s, e.target.value as Element)}>
+                    {ELEMENTS.map((el) => <option key={el} value={el}>{ELEMENT_NAME[el]}</option>)}
+                  </select>
+                </label>
+              </div>
               {list.length === 0 ? (
                 <p className="muted small">Aucun chapitre.</p>
               ) : (

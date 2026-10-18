@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { LoadError, Loading } from '../../components/Loading';
-import { contentsFor, useChildData } from '../../lib/childData';
+import { chapterElementFn, contentsFor, themeFor, useChildData } from '../../lib/childData';
+import type { Learner } from '../../lib/api';
 import { buildDeck } from '../../games/deck';
 import Quiz from '../../games/Quiz';
 import Chrono from '../../games/Chrono';
@@ -20,11 +21,15 @@ export default function Partie() {
   const { scope = 'melange', game } = useParams();
   const state = useChildData();
   const [round, setRound] = useState(0);
-  const [result, setResult] = useState<RoundResult | null>(null);
+  const [result, setResult] = useState<{ round: RoundResult; before: Learner | null } | null>(null);
 
   const ready = state.status === 'ready' ? state.data : null;
   const contents = useMemo(() => (ready ? contentsFor(ready.catalog, scope) : []), [ready, scope]);
   const stats = ready?.learner?.items ?? {};
+  const elementOf = useMemo(() => (ready ? chapterElementFn(ready.catalog) : () => undefined), [ready]);
+  // l'enfant tel qu'il est au moment de finir, avant le rechargement de ses statistiques
+  const learnerNow = useRef<Learner | null>(null);
+  learnerNow.current = ready?.learner ?? null;
 
   const deck = useMemo(() => {
     if (!ready || !isGame(game)) return [];
@@ -37,7 +42,7 @@ export default function Partie() {
   const { reload } = state;
   const finish = useCallback(
     (r: RoundResult) => {
-      setResult(r);
+      setResult({ round: r, before: learnerNow.current });
       // l'enfant a progressé : ses statistiques serviront à la partie suivante
       reload();
     },
@@ -61,20 +66,20 @@ export default function Partie() {
   if (!ready) return <main className="page child"><Loading /></main>;
 
   return (
-    <main className="page child">
+    <main className="page child themed" data-element={themeFor(ready.catalog, scope)}>
       <div className="game-header">
         <Link className="back" to={`/jouer/${scope}`}>← Jeux</Link>
         <span className="game-name">{GAME_LABEL[game]}</span>
       </div>
 
       {result ? (
-        <Resultat result={result} game={game} scope={scope} token={ready.token} onReplay={replay} />
+        <Resultat result={result.round} before={result.before} catalog={ready.catalog} game={game} scope={scope} token={ready.token} onReplay={replay} />
       ) : deck.length === 0 ? (
         <p className="muted">Pas assez de questions pour ce jeu.</p>
       ) : game === 'quiz' ? (
-        <Quiz key={round} deck={deck} onFinish={finish} />
+        <Quiz key={round} deck={deck} onFinish={finish} elementOf={elementOf} />
       ) : game === 'chrono' ? (
-        <Chrono key={round} makeDeck={makeChronoDeck} onFinish={finish} />
+        <Chrono key={round} makeDeck={makeChronoDeck} onFinish={finish} elementOf={elementOf} />
       ) : (
         <Paires key={round} deck={deck} onFinish={finish} />
       )}

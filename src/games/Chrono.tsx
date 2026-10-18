@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QuestionView from '../components/QuestionView';
 import { displayAnswer, isCorrect } from '../content/answers';
-import type { Question } from '../content/types';
+import type { Element, Question } from '../content/types';
+import { ElementIcon } from '../components/Element';
 import type { AnswerRecord } from '../lib/api';
 import type { RoundResult } from './types';
 
@@ -11,10 +12,11 @@ interface Props {
   /** Fournit un nouveau paquet de questions quand le précédent est épuisé. */
   makeDeck: () => Question[];
   onFinish: (result: RoundResult) => void;
+  elementOf: (chapterId: string) => Element | undefined;
 }
 
 /** Contre la montre : un maximum de bonnes réponses en 60 secondes. */
-export default function Chrono({ makeDeck, onFinish }: Props) {
+export default function Chrono({ makeDeck, onFinish, elementOf }: Props) {
   const [queue, setQueue] = useState<Question[]>(() => makeDeck());
   const [index, setIndex] = useState(0);
   const [turn, setTurn] = useState(0);
@@ -71,6 +73,11 @@ export default function Chrono({ makeDeck, onFinish }: Props) {
         <div style={{ width: `${(left / CHRONO_SECONDS) * 100}%` }} />
       </div>
       <QuestionView key={`${turn}-${question.key}`} question={question} onAnswer={answer} disabled={flash !== null || left === 0} compact />
+      {flash === 'ok' && (
+        <div className="chrono-burst" aria-hidden="true">
+          <ElementIcon element={elementOf(question.chapterId) ?? 'avatar'} size={64} className={`burst burst-${elementOf(question.chapterId) ?? 'avatar'}`} />
+        </div>
+      )}
       {flash === 'ko' && (
         <p className="chrono-correction" role="status">
           Réponse : <strong>{displayAnswer(question.answer)}</strong>

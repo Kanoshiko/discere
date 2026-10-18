@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { displayAnswer } from '../content/answers';
-import type { GameId } from '../content/types';
-import { recordRound } from '../lib/api';
+import type { Element, GameId } from '../content/types';
+import { finishRound, type Catalog, type Learner } from '../lib/api';
+import { chapterElementFn, learnerXp } from '../lib/childData';
+import { ElementIcon, ScrollIcon } from '../components/Element';
 import { starsFor } from './deck';
+import { ELEMENTS, ELEMENT_OF, isAvatar, rankFor, roundGains } from './ranks';
 import type { RoundResult } from './types';
 
 interface Props {
@@ -11,22 +14,35 @@ interface Props {
   game: GameId;
   scope: string;
   token: string | null;
+  catalog: Catalog;
+  /** L'enfant tel qu'il était avant la partie (null en mode essai). */
+  before: Learner | null;
   onReplay: () => void;
 }
 
 const MESSAGES = ['Continue, tu progresses !', 'Pas mal du tout !', 'Très bien !', 'Champion !'];
 
-export default function Resultat({ result, game, scope, token, onReplay }: Props) {
+export default function Resultat({ result, game, scope, token, catalog, before, onReplay }: Props) {
   const [save, setSave] = useState<'pending' | 'ok' | 'error' | 'off'>(token ? 'pending' : 'off');
+  const [newScrolls, setNewScrolls] = useState<string[]>([]);
   const sent = useRef(false);
   const stars = game === 'chrono' ? starsFor(result.score, Math.max(result.total, 10)) : starsFor(result.score, result.total);
   const mistakes = result.answers.filter((a) => !a.correct);
 
+  const gains = before ? roundGains(result.answers, before.items, chapterElementFn(catalog)) : null;
+  const xpBefore = before ? learnerXp(catalog, before) : null;
+  const xpAfter = xpBefore && gains ? (Object.fromEntries(ELEMENTS.map((e) => [e, xpBefore[e] + gains[e]])) as Record<Element, number>) : null;
+  const rankUps = xpBefore && xpAfter ? ELEMENTS.filter((e) => rankFor(xpAfter[e]).index > rankFor(xpBefore[e]).index) : [];
+  const becameAvatar = xpBefore && xpAfter ? !isAvatar(xpBefore) && isAvatar(xpAfter) : false;
+
   function send() {
     if (!token) return;
     setSave('pending');
-    recordRound(token, game, scope === 'melange' ? null : scope, result.score, result.total, result.durationS, result.answers)
-      .then(() => setSave('ok'))
+    finishRound(token, game, scope === 'melange' ? null : scope, result.score, result.total, result.durationS, result.answers)
+      .then((scrolls) => {
+        setNewScrolls(scrolls);
+        setSave('ok');
+      })
       .catch(() => setSave('error'));
   }
 
@@ -50,6 +66,36 @@ export default function Resultat({ result, game, scope, token, onReplay }: Props
           ? `${result.score} bonne${result.score > 1 ? 's' : ''} réponse${result.score > 1 ? 's' : ''} en 60 secondes`
           : `${result.score} / ${result.total}`}
       </p>
+
+      {gains && ELEMENTS.some((e) => gains[e] > 0) && (
+        <ul className="gains">
+          {ELEMENTS.filter((e) => gains[e] > 0).map((e) => (
+            <li key={e} data-element={e}>
+              <ElementIcon element={e} size={28} />+{gains[e]} points {ELEMENT_OF[e]}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {becameAvatar && (
+        <p className="level-up" data-element="avatar">
+          <ElementIcon element="avatar" size={44} className="burst burst-avatar" />
+          Tu maîtrises les quatre éléments : tu es l’Avatar !
+        </p>
+      )}
+      {xpAfter &&
+        rankUps.map((e) => (
+          <p key={e} className="level-up" data-element={e}>
+            <ElementIcon element={e} size={44} className={`burst burst-${e}`} />
+            Nouveau rang : {rankFor(xpAfter[e]).name} {ELEMENT_OF[e]} !
+          </p>
+        ))}
+      {newScrolls.map((id) => (
+        <p key={id} className="level-up scroll-won">
+          <ScrollIcon earned size={44} />
+          Parchemin gagné : {catalog.chapters.find((c) => c.id === id)?.title ?? 'chapitre maîtrisé'}
+        </p>
+      ))}
 
       {save === 'error' && (
         <p className="error" role="alert">
@@ -84,3 +130,4 @@ export default function Resultat({ result, game, scope, token, onReplay }: Props
     </div>
   );
 }
+

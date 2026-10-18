@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { listAnswers, listChapters, listLearners, listRounds, type AnswerRow, type LearnerRow, type RoundRow } from '../../lib/parentApi';
 import { accuracyByChapter, stillToReview } from '../../games/progress';
+import { fetchLearner, type Learner } from '../../lib/api';
+import ElementPath from '../../components/ElementPath';
+import { xpByElement } from '../../games/ranks';
+import type { Subject } from '../../content/types';
+import { listSubjects } from '../../lib/parentApi';
 import { GAME_LABEL, type Chapter } from '../../content/types';
 
 const dateFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -11,13 +16,16 @@ export default function Suivi() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [rounds, setRounds] = useState<RoundRow[] | null>(null);
   const [answers, setAnswers] = useState<AnswerRow[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [progress, setProgress] = useState<Learner | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listLearners(), listChapters()])
-      .then(([l, c]) => {
+    Promise.all([listLearners(), listChapters(), listSubjects()])
+      .then(([l, c, s]) => {
         setLearners(l);
         setChapters(c);
+        setSubjects(s);
         setLearnerId(l[0]?.id ?? null);
       })
       .catch((e: Error) => setError(e.message));
@@ -26,13 +34,15 @@ export default function Suivi() {
   useEffect(() => {
     if (!learnerId) return;
     setRounds(null);
-    Promise.all([listRounds(learnerId), listAnswers(learnerId)])
-      .then(([r, a]) => {
+    const token = learners?.find((l) => l.id === learnerId)?.token;
+    Promise.all([listRounds(learnerId), listAnswers(learnerId), token ? fetchLearner(token) : Promise.resolve(null)])
+      .then(([r, a, p]) => {
         setRounds(r);
         setAnswers(a);
+        setProgress(p);
       })
       .catch((e: Error) => setError(e.message));
-  }, [learnerId]);
+  }, [learnerId, learners]);
 
   const chapterTitle = (id: string | null) => (id ? chapters.find((c) => c.id === id)?.title ?? 'Chapitre supprimé' : 'Tout mélangé');
   const accuracy = accuracyByChapter(answers).sort((a, b) => a.correct / a.answered - b.correct / b.answered);
@@ -55,6 +65,16 @@ export default function Suivi() {
 
       {rounds && (
         <>
+          {progress && (
+            <section className="card stack-sm">
+              <h2>Progression</h2>
+              <ElementPath xp={xpByElement(progress.subjects, (id) => subjects.find((s) => s.id === id)?.element)} />
+              <p className="muted small">
+                {progress.scrolls.length} parchemin{progress.scrolls.length > 1 ? 's' : ''} gagné{progress.scrolls.length > 1 ? 's' : ''}
+                {progress.scrolls.length > 0 && ` : ${progress.scrolls.map((id) => chapterTitle(id)).join(', ')}`}
+              </p>
+            </section>
+          )}
           <section className="card stack-sm">
             <h2>Réussite par chapitre <span className="muted small">(30 derniers jours)</span></h2>
             {accuracy.length === 0 ? (

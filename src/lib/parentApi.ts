@@ -1,6 +1,6 @@
 // Appels réservés aux parents (la RLS refuse tout autre utilisateur).
 import { supabase } from './supabase';
-import type { Chapter, ChapterStatus, GameId, Item, Subject } from '../content/types';
+import type { Chapter, ChapterStatus, Element, GameId, Item, Subject } from '../content/types';
 import type { ItemDraft } from '../content/validate';
 import { cleanItem } from '../content/validate';
 
@@ -10,7 +10,7 @@ function check<T>(res: { data: T | null; error: { message: string } | null }): T
 }
 
 export async function listSubjects(): Promise<Subject[]> {
-  return check(await supabase.from('subjects').select('id, name, color, position').order('position'));
+  return check(await supabase.from('subjects').select('id, name, color, element, position').order('position'));
 }
 
 export async function listChapters(): Promise<Chapter[]> {
@@ -20,6 +20,10 @@ export async function listChapters(): Promise<Chapter[]> {
       .select('id, subject_id, title, grade, period, status, generator, position')
       .order('position'),
   );
+}
+
+export async function updateSubjectElement(id: string, element: Element) {
+  check(await supabase.from('subjects').update({ element }).eq('id', id));
 }
 
 export async function getChapter(id: string): Promise<Chapter> {

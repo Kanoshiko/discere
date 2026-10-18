@@ -1,6 +1,7 @@
 // Appels côté enfant : contenu public + fonctions identifiées par le jeton de l'appareil.
 import { supabase } from './supabase';
 import type { Chapter, GameId, Item, ItemStat, Question, Subject } from '../content/types';
+import type { SubjectProgress } from '../games/ranks';
 
 export interface Catalog {
   subjects: Subject[];
@@ -11,7 +12,7 @@ export interface Catalog {
 /** Matières, chapitres visibles (en cours / révision) et leurs questions. */
 export async function fetchCatalog(): Promise<Catalog> {
   const [s, c, i] = await Promise.all([
-    supabase.from('subjects').select('id, name, color, position').order('position'),
+    supabase.from('subjects').select('id, name, color, element, position').order('position'),
     supabase
       .from('chapters')
       .select('id, subject_id, title, grade, period, status, generator, position')
@@ -28,12 +29,18 @@ export interface Learner {
   name: string;
   grade: string;
   items: Record<string, ItemStat>;
+  /** Par matière : bonnes réponses et faiblesses vaincues. */
+  subjects: Record<string, SubjectProgress>;
+  /** Chapitres dont le parchemin est gagné. */
+  scrolls: string[];
 }
 
 export async function fetchLearner(token: string): Promise<Learner | null> {
   const { data, error } = await supabase.rpc('get_learner', { p_token: token });
   if (error) throw new Error(error.message);
-  return (data as Learner | null) ?? null;
+  if (!data) return null;
+  const l = data as Partial<Learner>;
+  return { name: l.name ?? '', grade: l.grade ?? '', items: l.items ?? {}, subjects: l.subjects ?? {}, scrolls: l.scrolls ?? [] };
 }
 
 export interface AnswerRecord {
@@ -42,7 +49,8 @@ export interface AnswerRecord {
   correct: boolean;
 }
 
-export async function recordRound(
+/** Enregistre la partie ; renvoie les chapitres dont le parchemin vient d'être gagné. */
+export async function finishRound(
   token: string,
   game: GameId,
   chapterId: string | null,
@@ -51,7 +59,7 @@ export async function recordRound(
   durationS: number,
   answers: AnswerRecord[],
 ) {
-  const { error } = await supabase.rpc('record_round', {
+  const { data, error } = await supabase.rpc('finish_round', {
     p_token: token,
     p_game: game,
     p_chapter_id: chapterId,
@@ -67,4 +75,5 @@ export async function recordRound(
     })),
   });
   if (error) throw new Error(error.message);
+  return ((data as { new_scrolls?: string[] } | null)?.new_scrolls ?? []) as string[];
 }
