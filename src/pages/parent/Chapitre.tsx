@@ -239,7 +239,7 @@ function ItemForm({ initial, onSave, onCancel }: { initial: ItemDraft; onSave: (
       </label>
       {draft.kind === 'ordre' ? (
         <label className="field">
-          <span className="label">Étapes dans le bon ordre (une par ligne, 3 à 8)</span>
+          <span className="label">Étapes dans le bon ordre (une par ligne, 3 à 10)</span>
           <textarea className="input" rows={6} value={stepsText} onChange={(e) => setStepsText(e.target.value)} placeholder={'Préhistoire|jusqu’à -3 300\nAntiquité|de -3 300 à 476\nMoyen Âge|de 476 à 1492'} />
           <span className="muted small">Détail facultatif après « | » : il s’affiche après la correction. L’enfant voit les étapes mélangées.</span>
         </label>

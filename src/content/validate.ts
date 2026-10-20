@@ -18,7 +18,7 @@ export function validateItem(d: ItemDraft): string | null {
   if (d.kind === 'ordre') {
     const steps = d.steps.map((x) => x.trim()).filter(Boolean);
     if (steps.length < 3) return 'Une frise a besoin d’au moins 3 étapes.';
-    if (steps.length > 8) return 'Pas plus de 8 étapes.';
+    if (steps.length > 10) return 'Pas plus de 10 étapes.';
     const labels = steps.map((x) => parseStep(x).label.toLowerCase());
     if (labels.some((l) => l.length === 0)) return 'Une étape n’a pas de nom.';
     if (labels.some((l) => l.length > 60)) return 'Le nom d’une étape dépasse 60 caractères.';

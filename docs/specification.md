@@ -44,7 +44,7 @@ vocabulaire originaux : ni personnage, ni logo, ni symbole officiel).
   - *Choix multiple* : une bonne réponse et 1 à 5 mauvaises réponses proposées, mélangées ;
   - *Réponse à taper* : variantes acceptées séparées par « | » ;
   - *Vrai ou faux* ;
-  - *Frise* (remettre dans l'ordre) : 3 à 8 étapes rangées dans le bon ordre, chacune avec un
+  - *Frise* (remettre dans l'ordre) : 3 à 10 étapes rangées dans le bon ordre, chacune avec un
     détail facultatif (une date) montré après la correction. L'enfant voit les étiquettes
     mélangées (jamais déjà dans le bon ordre), les touche dans l'ordre pour les poser sur la
     frise, et peut retirer une étiquette posée. La réponse est juste si tout l'ordre est juste ;
@@ -154,3 +154,5 @@ Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se p
   ratés dans les chapitres à générateur ; faiblesses vaincues comptées aussi pour les calculs.
 - 2026-10-20 : jeu Frise du temps et type de question « frise » (remettre des étapes dans
   l'ordre) ; frises d'histoire (périodes, événements, premiers hommes, vestiges).
+- 2026-10-20 : une frise peut compter 10 étapes ; la frise « ranger les dates » (simple tri de
+  nombres) est remplacée par une frise qui mêle les 5 périodes et les 4 événements qui les séparent.

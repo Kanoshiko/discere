@@ -39,5 +39,7 @@ describe('frise', () => {
   it('refuse moins de 3 étapes ou deux étapes identiques', () => {
     expect(validateItem({ ...frise, steps: ['A', 'B'] })).toMatch(/au moins 3/);
     expect(validateItem({ ...frise, steps: ['A', 'B|x', 'b'] })).toMatch(/même nom/);
+    expect(validateItem({ ...frise, steps: 'ABCDEFGHIJ'.split('') })).toBeNull();
+    expect(validateItem({ ...frise, steps: 'ABCDEFGHIJK'.split('') })).toMatch(/10 étapes/);
   });
 });
