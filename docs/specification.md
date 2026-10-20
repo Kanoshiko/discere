@@ -21,7 +21,7 @@ vocabulaire originaux : ni personnage, ni logo, ni symbole officiel).
   cartes de chapitre et aux pages de jeu. Le mélange de tous les chapitres s'appelle
   **« L'épreuve de l'Avatar »** (thème violet, quatre éléments).
 - Noms des jeux : **Entraînement** (quiz), **Duel éclair** (contre la montre),
-  **Harmonie** (paires).
+  **Harmonie** (paires), **Frise du temps** (remettre dans l'ordre).
 
 ## Rôles
 
@@ -40,10 +40,15 @@ vocabulaire originaux : ni personnage, ni logo, ni symbole officiel).
   - *À venir* : pas encore vu en classe, invisible pour l'enfant ;
   - *En cours* : travaillé en ce moment ;
   - *Révision* : déjà vu, revient de temps en temps.
-- **Questions** d'un chapitre, de trois types :
+- **Questions** d'un chapitre, de quatre types :
   - *Choix multiple* : une bonne réponse et 1 à 5 mauvaises réponses proposées, mélangées ;
   - *Réponse à taper* : variantes acceptées séparées par « | » ;
-  - *Vrai ou faux*.
+  - *Vrai ou faux* ;
+  - *Frise* (remettre dans l'ordre) : 3 à 8 étapes rangées dans le bon ordre, chacune avec un
+    détail facultatif (une date) montré après la correction. L'enfant voit les étiquettes
+    mélangées (jamais déjà dans le bon ordre), les touche dans l'ordre pour les poser sur la
+    frise, et peut retirer une étiquette posée. La réponse est juste si tout l'ordre est juste ;
+    la correction marque chaque place juste ou fausse et montre la frise complète.
   Chaque question peut avoir une explication montrée après la réponse.
 - **Questions générées** : un chapitre peut utiliser un générateur de calcul mental au lieu de
   questions écrites (`src/content/generators.ts`) : tables de multiplication (2 à 10),
@@ -81,8 +86,10 @@ révision).
 | --- | --- | --- |
 | **Entraînement** (quiz) | 10 questions ; après chaque réponse : « Bravo ! » ou la bonne réponse, et l'explication | bonnes réponses / 10 |
 | **Duel éclair** (contre la montre) | 60 secondes, enchaînement rapide ; la bonne réponse s'affiche brièvement en cas d'erreur | nombre de bonnes réponses |
+| **Frise du temps** | jusqu'à 5 frises du chapitre ; proposé seulement s'il y a au moins une frise | frises entièrement justes / nombre de frises |
 | **Harmonie** (paires) | 6 questions à relier à leur réponse (questions de 70 caractères au plus, réponses de 24 au plus, toutes différentes, pas de vrai/faux) | paires trouvées du premier coup / 6 |
 
+Les frises apparaissent aussi dans l'Entraînement, jamais dans le Duel éclair ni dans Harmonie.
 Harmonie n'est proposé que si le chapitre fournit au moins 4 paires possibles.
 
 **Étoiles** en fin de partie : 3 à partir de 90 % de réussite, 2 à partir de 70 %, 1 à partir
@@ -145,3 +152,5 @@ Seulement pour un appareil relié à un enfant (pas en mode essai). Rien ne se p
   Avatar et parchemins.
 - 2026-10-18 : répétition espacée (boîtes de Leitner, délais de révision) et retour des calculs
   ratés dans les chapitres à générateur ; faiblesses vaincues comptées aussi pour les calculs.
+- 2026-10-20 : jeu Frise du temps et type de question « frise » (remettre des étapes dans
+  l'ordre) ; frises d'histoire (périodes, événements, premiers hommes, vestiges).

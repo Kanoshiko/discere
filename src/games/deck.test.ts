@@ -15,6 +15,7 @@ function items(chapterId: string, n: number): Item[] {
     prompt: `Question ${i}`,
     answer: `r${i}`,
     distractors: [],
+    steps: [],
     explanation: null,
   }));
 }
@@ -117,10 +118,22 @@ describe('répétition espacée', () => {
 describe('itemToQuestion', () => {
   it('mélange la bonne réponse parmi les propositions', () => {
     const q = itemToQuestion(
-      { id: 'x', chapter_id: 'a', kind: 'choix', prompt: 'p', answer: 'a', distractors: ['à'], explanation: null },
+      { id: 'x', chapter_id: 'a', kind: 'choix', prompt: 'p', answer: 'a', distractors: ['à'], steps: [], explanation: null },
       seeded(5),
     );
     expect([...q.options].sort()).toEqual(['a', 'à']);
+  });
+
+  it('prépare une frise mélangée, jamais dans le bon ordre', () => {
+    for (let s = 0; s < 50; s++) {
+      const q = itemToQuestion(
+        { id: 'f', chapter_id: 'a', kind: 'ordre', prompt: 'Range', answer: 'ordre', distractors: [], steps: ['A|un', 'B', 'C|trois'], explanation: null },
+        seeded(s),
+      );
+      expect(q.steps).toEqual([{ label: 'A', detail: 'un' }, { label: 'B', detail: null }, { label: 'C', detail: 'trois' }]);
+      expect([...q.options].sort()).toEqual(['A', 'B', 'C']);
+      expect(q.options).not.toEqual(['A', 'B', 'C']);
+    }
   });
 });
 

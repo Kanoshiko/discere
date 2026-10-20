@@ -348,3 +348,27 @@ textarea.input { resize: vertical; }
 .game { position: relative; }
 .chrono-burst { position: absolute; top: 64px; right: 14px; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .burst { animation: none !important; } }
+
+/* Frise : étiquettes à remettre dans l'ordre */
+.order { display: flex; flex-direction: column; gap: 14px; }
+.order-line { list-style: none; margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 8px; border-left: 4px solid var(--el, var(--accent)); }
+.order-slot { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 52px; }
+.order-num {
+  position: absolute; left: -32px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+  background: var(--el, var(--accent)); color: #fff;
+}
+.order-empty { flex: 1; min-height: 48px; border: 2px dashed #cfc5b3; border-radius: 12px; display: flex; align-items: center; padding: 0 12px; color: var(--muted); }
+.order-chip {
+  min-height: 48px; padding: 8px 14px; border-radius: 12px;
+  border: 3px solid var(--el, var(--accent)); background: var(--el-light, #eef5ff); color: var(--ink);
+  font: 700 17px var(--font-body); cursor: pointer; text-align: left;
+}
+.order-chip.placed { background: #fff; }
+.order-chip:disabled { cursor: default; opacity: 1; }
+.order-slot.right .order-chip { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+.order-slot.wrong .order-chip { border-color: var(--ko); background: var(--ko-bg); color: var(--ko); text-decoration: line-through; }
+.order-correction { font-size: 15px; }
+.order-hint { margin: 0; font-size: 15px; color: var(--muted); }
+.order-pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 16px; background: var(--ground); min-height: 72px; }
+.order-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }

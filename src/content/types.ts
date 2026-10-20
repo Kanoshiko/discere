@@ -1,6 +1,6 @@
-export type ItemKind = 'choix' | 'saisie' | 'vrai_faux';
+export type ItemKind = 'choix' | 'saisie' | 'vrai_faux' | 'ordre';
 export type ChapterStatus = 'a_venir' | 'en_cours' | 'revision';
-export type GameId = 'quiz' | 'chrono' | 'paires';
+export type GameId = 'quiz' | 'chrono' | 'paires' | 'frise';
 export type Element = 'feu' | 'air' | 'eau' | 'terre';
 
 export interface Subject {
@@ -30,7 +30,21 @@ export interface Item {
   /** Bonne réponse ; en saisie, variantes séparées par « | ». */
   answer: string;
   distractors: string[];
+  /** Question « ordre » : étapes dans le bon ordre, détail facultatif après « | ». */
+  steps: string[];
   explanation: string | null;
+}
+
+export interface Step {
+  label: string;
+  detail: string | null;
+}
+
+/** « Moyen Âge|de 476 à 1492 » → { label: 'Moyen Âge', detail: 'de 476 à 1492' } */
+export function parseStep(raw: string): Step {
+  const i = raw.indexOf('|');
+  if (i < 0) return { label: raw.trim(), detail: null };
+  return { label: raw.slice(0, i).trim(), detail: raw.slice(i + 1).trim() || null };
 }
 
 /** Question prête à être posée, issue d'un item ou d'un générateur. */
@@ -42,8 +56,10 @@ export interface Question {
   kind: ItemKind;
   prompt: string;
   answer: string;
-  /** Propositions mélangées (bonne réponse comprise) pour choix et vrai_faux. */
+  /** Propositions mélangées (bonne réponse comprise) pour choix et vrai_faux ; étiquettes mélangées pour ordre. */
   options: string[];
+  /** Question « ordre » : étapes dans le bon ordre. */
+  steps: Step[];
   explanation: string | null;
 }
 
@@ -72,10 +88,12 @@ export const KIND_LABEL: Record<ItemKind, string> = {
   choix: 'Choix multiple',
   saisie: 'Réponse à taper',
   vrai_faux: 'Vrai ou faux',
+  ordre: 'Frise (remettre dans l’ordre)',
 };
 
 export const GAME_LABEL: Record<GameId, string> = {
   quiz: 'Entraînement',
   chrono: 'Duel éclair',
   paires: 'Harmonie',
+  frise: 'Frise du temps',
 };

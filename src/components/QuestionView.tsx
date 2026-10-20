@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { isCorrect } from '../content/answers';
+import OrderBoard from './OrderBoard';
 import type { Question } from '../content/types';
 
 interface Props {
@@ -35,7 +36,9 @@ export default function QuestionView({ question, onAnswer, disabled = false, com
     <div className={compact ? 'question compact' : 'question'}>
       <p className="question-prompt">{question.prompt}</p>
 
-      {question.kind === 'saisie' ? (
+      {question.kind === 'ordre' ? (
+        <OrderBoard question={question} onAnswer={onAnswer} disabled={disabled} given={given} />
+      ) : question.kind === 'saisie' ? (
         <form className="answer-form" onSubmit={submit}>
           <label className="sr-only" htmlFor="answer">Ta réponse</label>
           <input

@@ -75,7 +75,7 @@ export async function listItems(chapterId: string): Promise<Item[]> {
   return check(
     await supabase
       .from('items')
-      .select('id, chapter_id, kind, prompt, answer, distractors, explanation')
+      .select('id, chapter_id, kind, prompt, answer, distractors, steps, explanation')
       .eq('chapter_id', chapterId)
       .order('created_at'),
   );

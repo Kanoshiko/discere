@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { displayAnswer } from '../content/answers';
+import { expectedAnswer } from '../content/answers';
 import type { Element, GameId } from '../content/types';
 import { finishRound, type Catalog, type Learner } from '../lib/api';
 import { chapterElementFn, learnerXp } from '../lib/childData';
@@ -119,7 +119,7 @@ export default function Resultat({ result, game, scope, token, catalog, before, 
               <li key={i}>
                 <span>{m.question.prompt}</span>
                 <span>
-                  <strong>{displayAnswer(m.question.answer)}</strong>
+                  <strong>{expectedAnswer(m.question)}</strong>
                   {m.given && <span className="muted"> (tu as répondu : {m.given})</span>}
                 </span>
               </li>

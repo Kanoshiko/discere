@@ -1,7 +1,7 @@
 import { displayAnswer, normalize } from '../content/answers';
 import { GENERATORS } from '../content/generators';
 import { shuffle, weightedIndex, type Rng } from '../content/random';
-import { statKey, type Chapter, type Item, type ItemStat, type Question } from '../content/types';
+import { parseStep, statKey, type Chapter, type Item, type ItemStat, type Question } from '../content/types';
 
 export interface ChapterContent {
   chapter: Chapter;
@@ -54,6 +54,8 @@ export function itemToQuestion(item: Item, rng: Rng): Question {
   let options: string[] = [];
   if (item.kind === 'choix') options = shuffle([displayAnswer(item.answer), ...item.distractors], rng);
   if (item.kind === 'vrai_faux') options = ['vrai', 'faux'];
+  const steps = item.kind === 'ordre' ? (item.steps ?? []).map(parseStep) : [];
+  if (item.kind === 'ordre') options = shuffleNotInOrder(steps.map((s) => s.label), rng);
   return {
     key: `item:${item.id}`,
     itemId: item.id,
@@ -62,8 +64,18 @@ export function itemToQuestion(item: Item, rng: Rng): Question {
     prompt: item.prompt,
     answer: item.answer,
     options,
+    steps,
     explanation: item.explanation,
   };
+}
+
+/** Mélange des étiquettes d'une frise, jamais déjà dans le bon ordre. */
+function shuffleNotInOrder(labels: string[], rng: Rng): string[] {
+  for (let i = 0; i < 10; i++) {
+    const s = shuffle(labels, rng);
+    if (s.some((l, j) => l !== labels[j])) return s;
+  }
+  return [...labels].reverse();
 }
 
 function fromGenerated(chapter: Chapter, g: { prompt: string; answer: string; explanation: string | null }): Question {
@@ -75,6 +87,7 @@ function fromGenerated(chapter: Chapter, g: { prompt: string; answer: string; ex
     prompt: g.prompt,
     answer: g.answer,
     options: [],
+    steps: [],
     explanation: g.explanation,
   };
 }

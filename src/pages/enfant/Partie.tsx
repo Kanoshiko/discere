@@ -9,12 +9,16 @@ import Chrono from '../../games/Chrono';
 import Paires, { fitsPair, PAIRS } from '../../games/Paires';
 import Resultat from '../../games/Resultat';
 import type { RoundResult } from '../../games/types';
-import { GAME_LABEL, type GameId } from '../../content/types';
+import { GAME_LABEL, type GameId, type Question } from '../../content/types';
 
 const QUIZ_LENGTH = 10;
+const FRISE_LENGTH = 5;
+
+const isFrise = (q: Question) => q.kind === 'ordre';
+const notFrise = (q: Question) => q.kind !== 'ordre';
 
 function isGame(value: string | undefined): value is GameId {
-  return value === 'quiz' || value === 'chrono' || value === 'paires';
+  return value === 'quiz' || value === 'chrono' || value === 'paires' || value === 'frise';
 }
 
 export default function Partie() {
@@ -34,11 +38,13 @@ export default function Partie() {
   const deck = useMemo(() => {
     if (!ready || !isGame(game)) return [];
     if (game === 'paires') return buildDeck(contents, stats, PAIRS, Math.random, { filter: fitsPair, uniqueAnswers: true });
-    return buildDeck(contents, stats, game === 'chrono' ? 40 : QUIZ_LENGTH, Math.random);
+    if (game === 'frise') return buildDeck(contents, stats, FRISE_LENGTH, Math.random, { filter: isFrise });
+    if (game === 'chrono') return buildDeck(contents, stats, 40, Math.random, { filter: notFrise });
+    return buildDeck(contents, stats, QUIZ_LENGTH, Math.random);
     // `round` : un nouveau paquet à chaque partie
   }, [ready, contents, game, round]);
 
-  const makeChronoDeck = useCallback(() => buildDeck(contents, stats, 40, Math.random), [contents, stats]);
+  const makeChronoDeck = useCallback(() => buildDeck(contents, stats, 40, Math.random, { filter: notFrise }), [contents, stats]);
   const { reload } = state;
   const finish = useCallback(
     (r: RoundResult) => {
@@ -76,7 +82,7 @@ export default function Partie() {
         <Resultat result={result.round} before={result.before} catalog={ready.catalog} game={game} scope={scope} token={ready.token} onReplay={replay} />
       ) : deck.length === 0 ? (
         <p className="muted">Pas assez de questions pour ce jeu.</p>
-      ) : game === 'quiz' ? (
+      ) : game === 'quiz' || game === 'frise' ? (
         <Quiz key={round} deck={deck} onFinish={finish} elementOf={elementOf} />
       ) : game === 'chrono' ? (
         <Chrono key={round} makeDeck={makeChronoDeck} onFinish={finish} elementOf={elementOf} />

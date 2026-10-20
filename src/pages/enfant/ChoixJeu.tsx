@@ -11,6 +11,7 @@ const GAMES: { id: GameId; text: string }[] = [
   { id: 'quiz', text: '10 questions, avec la correction à chaque fois.' },
   { id: 'chrono', text: 'Un maximum de bonnes réponses en 60 secondes.' },
   { id: 'paires', text: 'Relie chaque question à sa réponse.' },
+  { id: 'frise', text: 'Remets les étapes dans l’ordre sur la frise.' },
 ];
 
 export default function ChoixJeu() {
@@ -37,6 +38,9 @@ export default function ChoixJeu() {
 
   const pairsPossible = buildDeck(contents, {}, PAIRS, seeded(1), { filter: fitsPair, uniqueAnswers: true }).length >= 4;
   const anyQuestion = buildDeck(contents, {}, 1, seeded(1)).length > 0;
+  const friseCount = contents.reduce((n, c) => n + c.items.filter((i) => i.kind === 'ordre').length, 0);
+  const onlyFrises = friseCount > 0 && contents.every((c) => !c.chapter.generator && c.items.every((i) => i.kind === 'ordre'));
+  const games = GAMES.filter((g) => (g.id === 'frise' ? friseCount > 0 : g.id !== 'chrono' || !onlyFrises));
 
   return (
     <main className="page child themed" data-element={theme}>
@@ -49,7 +53,7 @@ export default function ChoixJeu() {
         <p className="muted">Ce chapitre n'a pas encore de questions.</p>
       ) : (
         <div className="game-list">
-          {GAMES.map((g) =>
+          {games.map((g) =>
             g.id === 'paires' && !pairsPossible ? (
               <div key={g.id} className="big-card disabled" aria-disabled="true">
                 <span className="big-card-title">{GAME_LABEL[g.id]}</span>

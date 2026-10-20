@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QuestionView from '../components/QuestionView';
-import { displayAnswer, isCorrect } from '../content/answers';
+import { expectedAnswer, isCorrectFor } from '../content/answers';
 import type { Element, Question } from '../content/types';
 import { ElementIcon } from '../components/Element';
 import type { AnswerRecord } from '../lib/api';
@@ -45,7 +45,7 @@ export default function Chrono({ makeDeck, onFinish, elementOf }: Props) {
   const question = queue[index];
 
   function answer(given: string) {
-    const correct = isCorrect(given, question.answer);
+    const correct = isCorrectFor(question, given);
     answers.current = [...answers.current, { question, given, correct }];
     setFlash(correct ? 'ok' : 'ko');
     setTimeout(() => {
@@ -80,7 +80,7 @@ export default function Chrono({ makeDeck, onFinish, elementOf }: Props) {
       )}
       {flash === 'ko' && (
         <p className="chrono-correction" role="status">
-          Réponse : <strong>{displayAnswer(question.answer)}</strong>
+          Réponse : <strong>{expectedAnswer(question)}</strong>
         </p>
       )}
     </div>

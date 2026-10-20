@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import QuestionView from '../components/QuestionView';
-import { displayAnswer, isCorrect } from '../content/answers';
+import { expectedAnswer, isCorrectFor } from '../content/answers';
 import type { Element, Question } from '../content/types';
 import { ElementIcon } from '../components/Element';
 import type { AnswerRecord } from '../lib/api';
@@ -21,7 +21,7 @@ export default function Quiz({ deck, onFinish, elementOf }: Props) {
   const question = deck[index];
 
   function answer(given: string) {
-    const record = { question, given, correct: isCorrect(given, question.answer) };
+    const record = { question, given, correct: isCorrectFor(question, given) };
     setAnswers((list) => [...list, record]);
     setFeedback(record);
   }
@@ -58,11 +58,12 @@ export default function Quiz({ deck, onFinish, elementOf }: Props) {
             <ElementIcon element={elementOf(question.chapterId) ?? 'avatar'} size={56} className={`burst burst-${elementOf(question.chapterId) ?? 'avatar'}`} />
           )}
           <p className="feedback-title">{feedback.correct ? 'Bravo !' : 'Pas tout à fait…'}</p>
-          {!feedback.correct && (
+          {!feedback.correct && question.kind !== 'ordre' && (
             <p>
-              La bonne réponse : <strong>{displayAnswer(question.answer)}</strong>
+              La bonne réponse : <strong>{expectedAnswer(question)}</strong>
             </p>
           )}
+          {!feedback.correct && question.kind === 'ordre' && <p>Regarde la frise corrigée ci-dessus.</p>}
           {question.explanation && <p className="feedback-explanation">{question.explanation}</p>}
           <button className="btn primary" type="button" onClick={next} autoFocus>
             {index + 1 >= deck.length ? 'Voir mon score' : 'Question suivante'}

@@ -8,7 +8,7 @@ export const PAIRS = 6;
 
 /** Questions assez courtes pour tenir sur une carte. */
 export function fitsPair(q: Question): boolean {
-  return q.kind !== 'vrai_faux' && q.prompt.length <= 70 && displayAnswer(q.answer).length <= 24;
+  return (q.kind === 'choix' || q.kind === 'saisie') && q.prompt.length <= 70 && displayAnswer(q.answer).length <= 24;
 }
 
 interface Props {

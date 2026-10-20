@@ -14,10 +14,10 @@ import { GENERATORS, generatorLabel } from '../../content/generators';
 import { validateItem, type ItemDraft } from '../../content/validate';
 import { KIND_LABEL, STATUS_LABEL, type Chapter, type ChapterStatus, type Item, type ItemKind, type Subject } from '../../content/types';
 
-const EMPTY: ItemDraft = { kind: 'choix', prompt: '', answer: '', distractors: [], explanation: '' };
+const EMPTY: ItemDraft = { kind: 'choix', prompt: '', answer: '', distractors: [], steps: [], explanation: '' };
 
 function toDraft(item: Item): ItemDraft {
-  return { kind: item.kind, prompt: item.prompt, answer: item.answer, distractors: item.distractors, explanation: item.explanation ?? '' };
+  return { kind: item.kind, prompt: item.prompt, answer: item.answer, distractors: item.distractors, steps: item.steps ?? [], explanation: item.explanation ?? '' };
 }
 
 export default function Chapitre() {
@@ -173,7 +173,7 @@ export default function Chapitre() {
                   <p className="item-prompt">{item.prompt}</p>
                   <p className="small">
                     <span className="muted">{KIND_LABEL[item.kind]} · </span>
-                    <strong>{item.answer}</strong>
+                    <strong>{item.kind === 'ordre' ? (item.steps ?? []).map((s) => s.replace('|', ' : ')).join(' → ') : item.answer}</strong>
                     {item.distractors.length > 0 && <span className="muted"> (et non : {item.distractors.join(', ')})</span>}
                   </p>
                   {item.explanation && <p className="muted small">{item.explanation}</p>}
@@ -198,12 +198,13 @@ export default function Chapitre() {
 function ItemForm({ initial, onSave, onCancel }: { initial: ItemDraft; onSave: (d: ItemDraft) => Promise<void>; onCancel: () => void }) {
   const [draft, setDraft] = useState<ItemDraft>(initial);
   const [distractorsText, setDistractorsText] = useState(initial.distractors.join('\n'));
+  const [stepsText, setStepsText] = useState(initial.steps.join('\n'));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    const d = { ...draft, distractors: distractorsText.split('\n') };
+    const d = { ...draft, distractors: distractorsText.split('\n'), steps: stepsText.split('\n') };
     const problem = validateItem(d);
     setError(problem);
     if (problem) return;
@@ -236,7 +237,13 @@ function ItemForm({ initial, onSave, onCancel }: { initial: ItemDraft; onSave: (
         <textarea className="input" rows={2} maxLength={300} value={draft.prompt} onChange={(e) => setDraft({ ...draft, prompt: e.target.value })} />
         <span className="muted small">Astuce : « ___ » marque le trou à compléter.</span>
       </label>
-      {draft.kind === 'vrai_faux' ? (
+      {draft.kind === 'ordre' ? (
+        <label className="field">
+          <span className="label">Étapes dans le bon ordre (une par ligne, 3 à 8)</span>
+          <textarea className="input" rows={6} value={stepsText} onChange={(e) => setStepsText(e.target.value)} placeholder={'Préhistoire|jusqu’à -3 300\nAntiquité|de -3 300 à 476\nMoyen Âge|de 476 à 1492'} />
+          <span className="muted small">Détail facultatif après « | » : il s’affiche après la correction. L’enfant voit les étapes mélangées.</span>
+        </label>
+      ) : draft.kind === 'vrai_faux' ? (
         <fieldset className="field">
           <legend className="label">Bonne réponse</legend>
           <div className="segmented">

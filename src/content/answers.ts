@@ -25,6 +25,21 @@ export function displayAnswer(answer: string): string {
   return acceptedAnswers(answer)[0] ?? answer;
 }
 
+/** Réponse donnée à une question « ordre » : les étiquettes dans l'ordre choisi. */
+export const ORDER_SEPARATOR = ' → ';
+
+/** Correction selon le type de question. */
+export function isCorrectFor(q: { kind: string; answer: string; steps: { label: string }[] }, given: string): boolean {
+  if (q.kind === 'ordre') return given === q.steps.map((s) => s.label).join(ORDER_SEPARATOR);
+  return isCorrect(given, q.answer);
+}
+
+/** Bonne réponse à afficher selon le type de question. */
+export function expectedAnswer(q: { kind: string; answer: string; steps: { label: string }[] }): string {
+  if (q.kind === 'ordre') return q.steps.map((s) => s.label).join(ORDER_SEPARATOR);
+  return displayAnswer(q.answer);
+}
+
 export function isCorrect(given: string, answer: string): boolean {
   const g = normalize(given);
   if (g === '') return false;

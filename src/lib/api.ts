@@ -18,7 +18,7 @@ export async function fetchCatalog(): Promise<Catalog> {
       .select('id, subject_id, title, grade, period, status, generator, position')
       .neq('status', 'a_venir')
       .order('position'),
-    supabase.from('items').select('id, chapter_id, kind, prompt, answer, distractors, explanation'),
+    supabase.from('items').select('id, chapter_id, kind, prompt, answer, distractors, steps, explanation'),
   ]);
   const error = s.error ?? c.error ?? i.error;
   if (error) throw new Error(error.message);
